@@ -47,9 +47,11 @@ public class SecurityConfig {
                                 DispatcherType.INCLUDE)
                         .permitAll()
                         // cho phep truy cap
-                        .requestMatchers("/", "/login", "/product/**", "/client/**", "/css/**", "/js/**", "/images/**")
+                        .requestMatchers("/", "/login", "/product/**", "/client/**", "/css/**", "/js/**",
+                                "/images/**")
                         .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated())
 
                 // session
@@ -76,4 +78,15 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http, UserDetailsService userDetailsService)
+            throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder())
+                .and()
+                .build();
+    }
+
 }
