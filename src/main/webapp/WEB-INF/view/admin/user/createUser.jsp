@@ -41,6 +41,13 @@
                         <form:input type="text" path="address" cssClass="form-control" />
                     </div>
 
+                    <div class="col-21">
+                        <label for="" class="form-label">Role</label>
+                        <select class="form-select" aria-label="Default select example">
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="USER">USER</option>
+                        </select>
+                    </div>
                     <div class="col-12">
                         <button type="submit" class="btn btn-success">Đăng ký</button>
                     </div>
