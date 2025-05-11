@@ -4,16 +4,29 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.example.Custom.domain.Role;
 import com.example.Custom.domain.User;
+import com.example.Custom.domain.dto.RegisterDTO;
+import com.example.Custom.repository.ProductRepository;
+import com.example.Custom.repository.RoleRepository;
 import com.example.Custom.repository.UserRepository;
 
 @Service
 public class UserService {
 
-    @Autowired
     private UserRepository userRepository;
+    private RoleRepository roleRepository;
+    private ProductRepository productRepository;
+
+    public UserService(UserRepository userRepository, RoleRepository roleRepository,
+            ProductRepository productRepository) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.productRepository = productRepository;
+    }
 
     public User handleCreateUser(User user) {
         return this.userRepository.save(user);
@@ -36,7 +49,27 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public Optional<User> getUserByEmail(String email) {
+    public User getUserByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    public boolean checkEmailExist(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public Role getRoleByName(String name) {
+        return roleRepository.findByName(name);
+    }
+
+    public User registerDTOtoUser(RegisterDTO registerDTO) {
+        User user = new User();
+        user.setFullName(registerDTO.getFirstName() + " " + registerDTO.getLastName());
+        user.setEmail(registerDTO.getEmail());
+        user.setPassword(registerDTO.getPassword());
+        return user;
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 }
