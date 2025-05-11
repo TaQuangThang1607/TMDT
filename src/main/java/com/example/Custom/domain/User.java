@@ -28,4 +28,11 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @Override
+    public String toString() {
+        return "User [id=" + id + ", email=" + email + ", password=" + password + ", fullName=" + fullName + ", phone="
+                + phone + ", address=" + address + ", avatar=" + avatar + ", role=" + role + "]";
+    }
+
 }

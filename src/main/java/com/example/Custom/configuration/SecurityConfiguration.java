@@ -2,41 +2,60 @@ package com.example.Custom.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import jakarta.servlet.DispatcherType;
+import org.springframework.session.security.web.authentication.SpringSessionRememberMeServices;
 
-import com.example.Custom.domain.User;
-import com.example.Custom.repository.UserRepository;
 import com.example.Custom.service.CustomUserDetailsService;
 import com.example.Custom.service.UserService;
 
-import jakarta.servlet.DispatcherType;
-
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
-public class SecurityConfig {
-    private final CustomSuccessHandler customSuccessHandler; // Tiêm bean
+public class SecurityConfiguration {
+    private final CustomSuccessHandler customSuccessHandler;
+    private final UserService userService;
 
-    private final UserRepository userRepository;
-
-    public SecurityConfig(UserRepository userRepository, CustomSuccessHandler customSuccessHandler) {
-        this.userRepository = userRepository;
+    public SecurityConfiguration(UserService userService, CustomSuccessHandler customSuccessHandler) {
+        this.userService = userService;
         this.customSuccessHandler = customSuccessHandler;
     }
 
     @Bean
-    public UserDetailsService userDetailsService(UserService userService) {
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    UserDetailsService userDetailsService(UserService userService) {
         return new CustomUserDetailsService(userService);
+    }
+
+    @Bean
+    DaoAuthenticationProvider authProvider(
+            PasswordEncoder passwordEncoder,
+            UserDetailsService userDetailsService) {
+
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        authProvider.setHideUserNotFoundExceptions(false); // hien thij thong bao sai user
+
+        return authProvider;
+    }
+
+    @Bean
+    SpringSessionRememberMeServices rememberMeServices() {
+        SpringSessionRememberMeServices rememberMeServices = new SpringSessionRememberMeServices();
+        // optionally customize
+        rememberMeServices.setAlwaysRemember(true);// dat trong 30 ngay
+        return rememberMeServices;
     }
 
     @Bean
@@ -47,11 +66,10 @@ public class SecurityConfig {
                                 DispatcherType.INCLUDE)
                         .permitAll()
                         // cho phep truy cap
-                        .requestMatchers("/", "/login", "/product/**", "/client/**", "/css/**", "/js/**",
+                        .requestMatchers("/", "/login", "/register", "/product/**", "/client/**", "/css/**", "/js/**",
                                 "/images/**")
                         .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-
                         .anyRequest().authenticated())
 
                 // session
@@ -72,21 +90,6 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.accessDeniedPage("/access-deny"));
 
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http, UserDetailsService userDetailsService)
-            throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder())
-                .and()
-                .build();
     }
 
 }
