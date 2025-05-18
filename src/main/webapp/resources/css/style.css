@@ -495,3 +495,32 @@
 }
 /*** Footer End ***/
 
+#zoom-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
+}
+
+#zoom-modal img {
+  max-width: 90%;
+  max-height: 90%;
+  box-shadow: 0 0 15px #000;
+  border-radius: 8px;
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
+}
+.product-thumb {
+  cursor: zoom-in;
+  transition: transform 0.2s ease;
+}
+
+.product-thumb:hover {
+  transform: scale(1.03);
+}
