@@ -70,47 +70,50 @@
                   </tr>
                 </thead>
                 <tbody>
-                <c:forEach var= "cartItems" items="${cartItems}">
-
+                <c:forEach var="cartItems" items="${cartItems}">
                   <tr>
-                    <td class="p-4">
-                      <div class="media align-items-center">
-                        <div>
-
-                            <img src="/images/product/${cartItems.product.imageUrl}"
-                                class="product-thumb"
-                                alt="Product Image"
-                                width="60"
-                                onclick="zoomImage(this.src)">
-                        </div>
-                        <div class="media-body">
-                          <a href="#" class="d-block text-dark">${cartItems.product.name}</a>
-                          <small>
-                            <span class="text-muted">${cartItems.product.color}</span>
-                            <span class="ui-product-color ui-product-color-sm align-text-bottom" style="background:#e81e2c;"></span> &nbsp;
-                            <span class="text-muted">Size: </span> ${cartItems.product.size} &nbsp;
-                          </small>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="text-right font-weight-semibold align-middle p-4">${cartItems.product.price} đ</td>
-                    <td class="align-middle p-4"><input type="text" class="form-control text-center" value="${cartItems.quantity}"></td>
-                    <td class="text-right font-weight-semibold align-middle p-4"> ${totalPrice}</td>
-
-                    <form action="/delete-cart-product/${cartItems.id}" method="post">
-                        <input type="hidden" name="${_csrf.parameterName}"
-                          value="${_csrf.token}" />
-                      <td class="text-center align-middle px-0">
-                        <button type="submit" class="shop-tooltip close float-none text-danger" 
-                        title="" data-original-title="Remove">
-                        ×
-                        </button>
+                      <td class="p-4">
+                          <div class="media align-items-center">
+                              <div>
+                                  <img src="/images/product/${cartItems.product.imageUrl}"
+                                      class="product-thumb"
+                                      alt="Product Image"
+                                      width="60"
+                                      onclick="zoomImage(this.src)">
+                              </div>
+                              <div class="media-body">
+                                  <a href="#" class="d-block text-dark">${cartItems.product.name}</a>
+                                  <small>
+                                      <span class="text-muted">${cartItems.product.color}</span>
+                                      <span class="ui-product-color ui-product-color-sm align-text-bottom" style="background:#e81e2c;"></span>  
+                                      <span class="text-muted">Size: </span> ${cartItems.product.size}  
+                                  </small>
+                              </div>
+                          </div>
                       </td>
-                    </form>
+                      <td class="text-right font-weight-semibold align-middle p-4">${cartItems.product.price} đ</td>
+                      <td class="align-middle p-4">
+                          <form action="/update-cart-quantity/${cartItems.id}" method="post">
+                              <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                              <input type="number" name="quantity" class="form-control text-center" 
+                                    value="${cartItems.quantity}" min="1" onchange="this.form.submit()">
+                          </form>
+                      </td>
+                      <td class="text-right font-weight-semibold align-middle p-4">${cartItems.quantity * cartItems.product.price} đ</td>
+                      <td class="text-center align-middle px-0">
+                          <form action="/delete-cart-product/${cartItems.id}" method="post">
+                              <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                              <button type="submit" class="shop-tooltip close float-none text-danger" 
+                                      title="" data-original-title="Remove">×</button>
+                          </form>
+                      </td>
                   </tr>
-        
-                  
-                </c:forEach>
+              </c:forEach>
+              <tr>
+                  <td colspan="3" class="text-right font-weight-semibold p-4">Tổng cộng:</td>
+                  <td class="text-right font-weight-semibold p-4">${totalCartPrice} đ</td>
+                  <td></td>
+              </tr>
 
                 </tbody>
               </table>

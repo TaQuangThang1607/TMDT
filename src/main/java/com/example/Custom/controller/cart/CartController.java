@@ -1,11 +1,9 @@
 package com.example.Custom.controller.cart;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.management.RuntimeErrorException;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.CartItem;
 import com.example.Custom.domain.User;
+import com.example.Custom.service.CartService;
 import com.example.Custom.service.ProductService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,11 +22,12 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class CartController {
     private ProductService productService;
-
+    private CartService cartService;
     
 
-    public CartController(ProductService productService) {
+    public CartController(ProductService productService,CartService cartService) {
         this.productService = productService;
+        this.cartService = cartService;
     }
 
 
@@ -56,13 +56,14 @@ public class CartController {
 
     @PostMapping("/delete-cart-product/{id}")
     public String removeProductToCartItem(@PathVariable Long id, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
         try {
-            HttpSession session = request.getSession(false);
-            long cartDetailId = id;
-            this.productService.handleRemoveCartItem(cartDetailId, session);
+            cartService.handleRemoveCartItem(id, session);
+            return "redirect:/cart";
         } catch (Exception e) {
-            return "redirect:/cart?error=remove_failed";
+            // Log lỗi nếu cần
+            System.err.println("Error removing cart item: " + e.getMessage());
+            return "redirect:/cart?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
         }
-        return "redirect:/cart";
     }
 }

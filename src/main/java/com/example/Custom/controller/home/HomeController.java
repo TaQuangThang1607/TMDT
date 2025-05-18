@@ -85,12 +85,12 @@ public class HomeController {
         String email = (String) session.getAttribute("email");
     
         // Thêm sản phẩm vào giỏ
-        this.productService.handleAddToProduct(email, id);
+        this.productService.handleAddToProduct(email, id,session);
     
         // Cập nhật lại số lượng trong session
         User user = userService.getUserByEmail(email);
         Cart cart = cartRepository.findByUser(user);
-        session.setAttribute("sum", cart.getSum());
+        session.setAttribute("sum", cart.getCartItems().size());
     
     return "redirect:/";
 
