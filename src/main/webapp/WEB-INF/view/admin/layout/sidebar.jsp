@@ -21,6 +21,10 @@
                         <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                         Order
                     </a>
+                    <a class="nav-link" href="/admin/edit_home">
+                        <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        Edit home
+                    </a>
 
                 </div>
             </div>

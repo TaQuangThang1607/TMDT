@@ -8,14 +8,19 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.User;
 import com.example.Custom.domain.dto.ProductDTO;
 import com.example.Custom.domain.dto.RegisterDTO;
+import com.example.Custom.repository.CartRepository;
 import com.example.Custom.service.ProductService;
 import com.example.Custom.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @Controller
@@ -23,11 +28,14 @@ public class HomeController {
     private ProductService productService;
     private UserService userService;
     private PasswordEncoder passwordEncoder;
+    private CartRepository cartRepository;
 
-    public HomeController(ProductService productService, UserService userService, PasswordEncoder passwordEncoder) {
+    public HomeController(ProductService productService, UserService userService, 
+    PasswordEncoder passwordEncoder,CartRepository cartRepository) {
         this.productService = productService;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.cartRepository= cartRepository;
     }
 
     @GetMapping("/")
@@ -69,6 +77,25 @@ public class HomeController {
         return "redirect:/login";
 
     }
+
+
+    @PostMapping("/add-product-to-cart/{id}")
+    public String addToCart(@PathVariable Long id,HttpServletRequest request){
+        HttpSession session = request.getSession();
+        String email = (String) session.getAttribute("email");
+    
+        // Thêm sản phẩm vào giỏ
+        this.productService.handleAddToProduct(email, id);
+    
+        // Cập nhật lại số lượng trong session
+        User user = userService.getUserByEmail(email);
+        Cart cart = cartRepository.findByUser(user);
+        session.setAttribute("sum", cart.getSum());
+    
+    return "redirect:/";
+
+    }
+
 
     @GetMapping("/access-deny")
     public String getDenyPage(Model model) {

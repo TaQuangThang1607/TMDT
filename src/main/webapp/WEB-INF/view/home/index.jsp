@@ -166,10 +166,16 @@
                                                                         class="d-flex justify-content-between flex-lg-wrap">
                                                                         <p class="text-dark fs-5 fw-bold mb-0">
                                                                             ${product.price} đ</p>
-                                                                        <a href="#"
-                                                                            class="btn border border-secondary rounded-pill px-3 text-primary"><i
-                                                                                class="fa fa-shopping-bag me-2 text-primary"></i>
-                                                                            Thêm vào giỏ hàng</a>
+                                                                        <form action="/add-product-to-cart/${product.id}" method="post">
+                                                                                <input type="hidden"
+                                                                                name="${_csrf.parameterName}"
+                                                                                value="${_csrf.token}" />
+                                                                            <button type="submit"
+                                                                                class="btn border border-secondary rounded-pill px-3 text-primary"><i
+                                                                                    class="fa fa-shopping-bag me-2 text-primary"></i>
+                                                                                Thêm vào giỏ hàng</button>
+
+                                                                        </form>
                                                                     </div>
                                                                 </div>
                                                             </div>

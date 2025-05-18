@@ -6,7 +6,7 @@
 
                     <div class="container px-0">
                         <nav class="navbar navbar-light bg-white navbar-expand-xl">
-                            <a href="index.html" class="navbar-brand">
+                            <a href="/" class="navbar-brand">
                                 <h1 class="text-primary display-6">LOGO</h1>
                             </a>
                             <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse"
@@ -15,7 +15,7 @@
                             </button>
                             <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                                 <div class="navbar-nav mx-auto">
-                                    <a href="index.html" class="nav-item nav-link active">Home</a>
+                                    <a href="/" class="nav-item nav-link active">Home</a>
                                     <a href="shop.html" class="nav-item nav-link">Shop</a>
                                     <a href="shop-detail.html" class="nav-item nav-link">Shop Detail</a>
 
@@ -27,11 +27,10 @@
 
                                         <a href="/cart" class="position-relative me-4 my-auto">
                                             <i class="fa fa-shopping-bag fa-2x"></i>
-                                            <span
-                                                class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                                                style="top: -5px; left: 15px; height: 20px; min-width: 20px;">
-                                                ${sessionScope.sum}
-
+                                            <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                                                style="top: -5px; left: 15px; height: 20px; min-width: 20px;"
+                                                id="cartCount">
+                                                ${not empty sessionScope.sum ? sessionScope.sum : 0}
                                             </span>
                                         </a>
                                         <div class="dropdown my-auto">

@@ -1,6 +1,5 @@
 package com.example.Custom.service;
 
-import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,7 +9,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.WebAttributes;
 
 import com.example.Custom.domain.User;
-import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

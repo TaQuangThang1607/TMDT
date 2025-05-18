@@ -27,7 +27,7 @@ public class Product {
     private String description;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private double price;
     private String size;
     private String color;
     private String material; // lua, gam, voan,...

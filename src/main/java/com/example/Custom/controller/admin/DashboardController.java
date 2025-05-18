@@ -12,4 +12,10 @@ public class DashboardController {
     public String showDashboard() {
         return "admin/Dashboard/index";
     }
+    
+    @GetMapping("edit_home")
+    public String edithome(){
+        return "admin/Dashboard/edit";
+
+    }
 }

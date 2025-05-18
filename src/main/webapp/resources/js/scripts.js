@@ -24,3 +24,12 @@ window.addEventListener('DOMContentLoaded', event => {
     }
 
 });
+
+// Trong file JS
+function addToCart(productId) {
+    fetch(`/add-product-to-cart/${productId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            document.querySelector('.cart-count').textContent = data.newSum;
+        });
+}
