@@ -136,12 +136,35 @@
                 </div>
               </div>
             </div>
-        
-            <div class="float-right">
-              <button type="button" class="btn btn-lg btn-default md-btn-flat mt-2 mr-3">Back to shopping</button>
-              <button type="button" class="btn btn-lg btn-primary mt-2">Checkout</button>
-            </div>
-        
+            <form:form action="/confirm-checkout" method="post" modelAttribute="cart">
+                      <input type="hidden" name="${_csrf.parameterName}"
+                        value="${_csrf.token}" />
+
+                  <div style="display: block;">
+                    <c:forEach var="cartItem" items="${cart.cartItems}"  varStatus="status">
+                        <div class="mb-3">
+                            <div class="form-group">
+                                <label for="">Id:</label>
+                                <input type="text"  class="form-control" value="${cartItem.id}"
+                                path="cartItems[${status.index}].id" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="">Quantity:</label>
+                                <input type="number"  class="form-control" value="${cartItem.quantity}"
+                                path="cartItems[${status.index}].quantity" />
+                            </div>
+
+                        </div>
+                    </c:forEach>
+
+                  </div>
+              <div class="float-right">
+                <button type="submit" class="btn btn-lg btn-primary mt-2">Checkout</button>
+              </div>
+            </form:form>
+            <a href="/">Quy ve trang chu</a>
+
           </div>
       </div>
   </div>

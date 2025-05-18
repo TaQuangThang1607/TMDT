@@ -38,7 +38,7 @@ public class CartController {
         long id = (long) session.getAttribute("id");
         user.setId(id); 
         
-        Cart cart = productService.fetchByUser(user);
+        Cart cart = cartService.fetchByUser(user);
         List<CartItem> cartItems = cart==null ? new ArrayList<>() : cart.getCartItems();
         double total =0;
         for (CartItem cartItem : cartItems) {

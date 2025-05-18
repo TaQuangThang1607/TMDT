@@ -2,15 +2,11 @@ package com.example.Custom.service;
 
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.example.Custom.domain.Role;
 import com.example.Custom.domain.User;
 import com.example.Custom.domain.dto.RegisterDTO;
-import com.example.Custom.repository.ProductRepository;
 import com.example.Custom.repository.RoleRepository;
 import com.example.Custom.repository.UserRepository;
 
@@ -19,13 +15,11 @@ public class UserService {
 
     private UserRepository userRepository;
     private RoleRepository roleRepository;
-    private ProductRepository productRepository;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository,
-            ProductRepository productRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.productRepository = productRepository;
+        
     }
 
     public User handleCreateUser(User user) {

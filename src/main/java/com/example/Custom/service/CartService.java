@@ -1,5 +1,6 @@
 package com.example.Custom.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -7,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.CartItem;
+import com.example.Custom.domain.User;
 import com.example.Custom.repository.CartItemRepository;
 import com.example.Custom.repository.CartRepository;
 
@@ -58,4 +60,19 @@ public class CartService {
             session.setAttribute("sum", (int) remainingItems);
         }
     }
+     public Cart fetchByUser(User user){
+        return this.cartRepository.findByUser(user);
+    }
+
+    public void handleUpdateCartBeforeCheckout(List<CartItem> CartItems) {
+        for (CartItem CartItem : CartItems) {
+            Optional<CartItem> cdOptional = this.cartItemRepository.findById(CartItem.getId());
+            if (cdOptional.isPresent()) {
+                CartItem currentCardDetail = cdOptional.get();
+                currentCardDetail.setQuantity(CartItem.getQuantity());
+                this.cartItemRepository.save(currentCardDetail);
+            }
+        }
+    }
+
 }

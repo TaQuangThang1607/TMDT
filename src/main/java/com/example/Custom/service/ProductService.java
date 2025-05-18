@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.CartItem;
@@ -163,9 +162,7 @@ public class ProductService {
             session.setAttribute("sum", cart.getCartItems().size());
         }
     }
-    public Cart fetchByUser(User user){
-        return this.cartRepository.findByUser(user);
-    }
+    
 
     
 }
