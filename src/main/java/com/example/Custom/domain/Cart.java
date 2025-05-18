@@ -1,5 +1,6 @@
 package com.example.Custom.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -11,7 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 @Entity
@@ -22,21 +22,13 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-     @Min(value = 0)
-    private int sum;
-
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> cartItems;
+    private List<CartItem> cartItems = new ArrayList<>();
 
-    public void removeCartItem(CartItem item) {
-        if (this.cartItems.remove(item)) {
-            item.setCart(null);
-            this.sum -= item.getQuantity();
-        }
-    }
+    
 }

@@ -1,5 +1,6 @@
 package com.example.Custom.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,11 +18,9 @@ import com.example.Custom.repository.CartItemRepository;
 import com.example.Custom.repository.CartRepository;
 import com.example.Custom.repository.CategoryRepository;
 import com.example.Custom.repository.ProductRepository;
-import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpSession;
 
-@Slf4j
 @Service
 public class ProductService {
     private ProductRepository productRepository;
@@ -119,74 +118,78 @@ public class ProductService {
         return dto;
     }
 
-    public void handleAddToProduct(String email, long productId) {
+
+
+    public void handleAddToProduct(String email, Long productId, HttpSession session) {
         User user = userService.getUserByEmail(email);
-        if(user != null){
-            Cart cart = cartRepository.findByUser(user);
-            if(cart ==null){
-                // create new cart
-                Cart ortherCart = new Cart();
-                ortherCart.setUser(user);
-                ortherCart.setSum(0);
-                cart = this.cartRepository.save(ortherCart);
-            }
-            Optional<Product> product = this.productRepository.findById(productId);
-            if(product.isPresent()){
-                Product currentProduct = product.get();
-                
-                CartItem orldItem = cartItemRepository.findByCartAndProduct(cart, currentProduct);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found with email: " + email);
+        }
 
-                if(orldItem == null){
-                    CartItem cartItem = new CartItem();
-                    cartItem.setCart(cart);
-                    cartItem.setProduct(currentProduct);
-                    cartItem.setPrice(currentProduct.getPrice());
-                    cartItem.setQuantity(1);
+        // Tìm hoặc tạo mới Cart
+        Cart cart = cartRepository.findByUser(user);
+        if (cart == null) {
+            cart = new Cart();
+            cart.setUser(user);
+            cart.setCartItems(new ArrayList<>());
+            cart = cartRepository.save(cart);
+        }
 
-                    this.cartItemRepository.save(cartItem);
+        // Tìm sản phẩm
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if (!productOptional.isPresent()) {
+            throw new IllegalArgumentException("Product not found with ID: " + productId);
+        }
+        Product product = productOptional.get();
 
-                    cart.setSum(cart.getSum()+1);
-                    cartRepository.save(cart);
-                }else{
-                    orldItem.setQuantity(orldItem.getQuantity() +1);
-                    this.cartItemRepository.save(orldItem);
-                }
-            }
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        CartItem existingItem = cartItemRepository.findByCartAndProduct(cart, product);
+        if (existingItem == null) {
+            // Tạo mới CartItem
+            CartItem cartItem = new CartItem();
+            cartItem.setCart(cart);
+            cartItem.setProduct(product);
+            cartItem.setPrice(product.getPrice());
+            cartItem.setQuantity(1);
+
+            cart.getCartItems().add(cartItem);
+            cartItemRepository.save(cartItem);
+        } else {
+            // Tăng số lượng nếu sản phẩm đã có
+            existingItem.setQuantity(existingItem.getQuantity() + 1);
+            cartItemRepository.save(existingItem);
+        }
+
+        // Cập nhật Cart trong database
+        cartRepository.save(cart);
+
+        // Cập nhật session với số lượng CartItem
+        if (session != null) {
+            session.setAttribute("sum", cart.getCartItems().size());
         }
     }
-
     public Cart fetchByUser(User user){
         return this.cartRepository.findByUser(user);
     }
 
-    @Transactional
-    public void handleRemoveCartItem(long cartItemId, HttpSession session) {
-        Optional<CartItem> cartItemOptional = cartItemRepository.findById(cartItemId);
-        if(cartItemOptional.isPresent()) {
-            CartItem cartItem = cartItemOptional.get();
-            Cart currentCart = cartItem.getCart();
+    // public void handleRemoveCartItem(long CartItemId, HttpSession session) {
+    //     Optional<CartItem> CartItemOptional = this.cartItemRepository.findById(CartItemId);
+    //     if (CartItemOptional.isPresent()) {
+    //         CartItem CartItem = CartItemOptional.get();
+    //         Cart currentCart = CartItem.getCart();
 
-            
-            cartItemRepository.deleteById(cartItemId);
-            
-            if(currentCart != null) {
-                int newSum = currentCart.getSum() - 1;
-                currentCart.setSum(newSum);  
-                
-                if(newSum <= 0) {
-                    cartRepository.deleteById(currentCart.getId());
-                    session.setAttribute("sum", 0);
-                    // session.setAttribute("cartEmpty", true);
-                } else {
-                    cartRepository.save(currentCart);
-                    session.setAttribute("sum", newSum);
-                    // session.setAttribute("cartEmpty", true);
-                }
-            } else {
-                session.setAttribute("sum", 0);
-                // session.setAttribute("cartEmpty", true);
-            }
-        }
-    }
+    //         this.cartItemRepository.deleteById(CartItemId);
+
+    //         if(currentCart.getSum() > 1){
+    //              int s = currentCart.getSum()-1;
+    //              currentCart.setSum(s);
+    //              session.setAttribute("sum", s);
+    //              this.cartRepository.save(currentCart);
+    //         }else{
+    //             this.cartRepository.deleteById(currentCart.getId());
+    //             session.setAttribute("sum", 0);
+    //         }
+    //     }
+    // }
     
 }
