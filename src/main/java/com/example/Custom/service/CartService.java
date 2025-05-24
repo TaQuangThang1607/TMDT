@@ -8,9 +8,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.CartItem;
+import com.example.Custom.domain.Order;
+import com.example.Custom.domain.OrderDetail;
+import com.example.Custom.domain.Product;
 import com.example.Custom.domain.User;
+import com.example.Custom.domain.dto.CheckoutCartDTO;
 import com.example.Custom.repository.CartItemRepository;
 import com.example.Custom.repository.CartRepository;
+import com.example.Custom.repository.OrderDetailRepository;
+import com.example.Custom.repository.OrderRepository;
+import com.example.Custom.repository.ProductRepository;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -20,14 +27,23 @@ public class CartService {
     
     private CartItemRepository cartItemRepository;
     private CartRepository cartRepository;
+    private OrderRepository orderRepository;
+    private OrderDetailRepository orderDetailRepository;
+    private ProductRepository productRepository;
     
 
-    public CartService(CartItemRepository cartItemRepository, CartRepository cartRepository) {
+    
+
+
+    public CartService(CartItemRepository cartItemRepository, CartRepository cartRepository,
+            OrderRepository orderRepository, OrderDetailRepository orderDetailRepository,
+            ProductRepository productRepository) {
         this.cartItemRepository = cartItemRepository;
         this.cartRepository = cartRepository;
+        this.orderRepository = orderRepository;
+        this.orderDetailRepository = orderDetailRepository;
+        this.productRepository = productRepository;
     }
-
-
     @Transactional
     public void handleRemoveCartItem(Long cartItemId, HttpSession session) {
         if (session == null) {
@@ -74,5 +90,43 @@ public class CartService {
             }
         }
     }
+    public void updateCartItemQuantity(Long cartItemId, int quantity) {
+        Optional<CartItem> cartItemOpt = cartItemRepository.findById(cartItemId);
+        if (cartItemOpt.isPresent()) {
+            CartItem cartItem = cartItemOpt.get();
+            if (quantity >= 1 && quantity <= cartItem.getProduct().getStock()) {
+                cartItem.setQuantity(quantity);
+                cartItem.setPrice(cartItem.getProduct().getPrice());
+                cartItemRepository.save(cartItem);
+            }
+        } else {
+            throw new RuntimeException("Cart item not found");
+        }
+    }
 
+
+    public void handlePlaceOrder(Order order, List<CheckoutCartDTO.CheckoutCartItemDTO> cartItems) {
+        order = orderRepository.save(order);
+
+        for (CheckoutCartDTO.CheckoutCartItemDTO item : cartItems) {
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setOrder(order);
+            Product product = productRepository.findById(item.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
+            orderDetail.setProducts(product);
+            orderDetail.setPrice(item.getPrice());
+            orderDetail.setQuantity(item.getQuantity());
+            orderDetailRepository.save(orderDetail);
+        }
+
+        // Xóa giỏ hàng
+        User user = order.getUser();
+        Cart cart = cartRepository.findByUser(user);
+        if (cart != null) {
+            List<CartItem> cartItemss = cart.getCartItems();
+            for (CartItem ci : cartItemss) {
+                cartItemRepository.deleteById(ci.getId());
+            }
+            cartRepository.deleteById(cart.getId());
+        }
+    }
 }

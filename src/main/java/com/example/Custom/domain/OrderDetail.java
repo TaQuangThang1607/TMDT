@@ -1,8 +1,5 @@
 package com.example.Custom.domain;
 
-import java.math.BigDecimal;
-
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,24 +10,20 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "order_items")
+@Table(name = "order_detail")
 @Data
-public class OrderItem {
+public class OrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
+    private long quantity;
+    private double price;
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    private Product product;
-
-    @Column(nullable = false)
-    private Integer quantity;
-
-    @Column(nullable = false)
-    private BigDecimal unitPrice; // don gia
+    private Product products;
 }

@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.CartItem;
@@ -63,6 +64,17 @@ public class CartController {
         } catch (Exception e) {
             // Log lỗi nếu cần
             System.err.println("Error removing cart item: " + e.getMessage());
+            return "redirect:/cart?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+        }
+    }
+
+    @PostMapping("/update-cart-quantity/{id}")
+    public String updateCartQuantity(@PathVariable Long id, @RequestParam("quantity") int quantity, HttpServletRequest request) {
+        try {
+            cartService.updateCartItemQuantity(id, quantity);
+            return "redirect:/cart";
+        } catch (Exception e) {
+            System.err.println("Error updating cart quantity: " + e.getMessage());
             return "redirect:/cart?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
         }
     }
