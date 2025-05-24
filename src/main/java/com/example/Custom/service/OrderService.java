@@ -1,5 +1,6 @@
 package com.example.Custom.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class OrderService {
         order.setReceiverAddress(orderDTO.getReceiverAddress());
         order.setReceiverPhone(orderDTO.getReceiverPhone());
         order.setReceiverNote(orderDTO.getReceiverNote());
+        order.setCreatedDate(LocalDateTime.now());
         order.setUser(user);
         // order.setCart(cart);
         order.setStatus("PENDING");

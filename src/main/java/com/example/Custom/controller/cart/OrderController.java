@@ -7,8 +7,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.CartItem;
@@ -16,7 +17,9 @@ import com.example.Custom.domain.Order;
 import com.example.Custom.domain.User;
 import com.example.Custom.domain.dto.CheckoutCartDTO;
 import com.example.Custom.domain.dto.OrderDTO;
+import com.example.Custom.domain.dto.OrderDetailDTO;
 import com.example.Custom.repository.CartItemRepository;
+import com.example.Custom.repository.OrderRepository;
 import com.example.Custom.repository.UserRepository;
 import com.example.Custom.service.CartService;
 import com.example.Custom.service.OrderService;
@@ -32,15 +35,18 @@ public class OrderController {
     private UserRepository userRepository; 
     private CartService cartService;
     private OrderService orderService;
+    private OrderRepository orderRepository;
     
     public OrderController(ProductService productService,
             CartItemRepository cartItemRepository, CartService cartService,
-             UserRepository userRepository, OrderService orderService) {
+             UserRepository userRepository, OrderService orderService,
+             OrderRepository orderRepository) {
         this.productService = productService;
         this.cartItemRepository = cartItemRepository;
         this.cartService = cartService;
         this.userRepository = userRepository;
         this.orderService = orderService;
+        this.orderRepository=orderRepository;
     }
 
     
@@ -166,6 +172,30 @@ public class OrderController {
     @GetMapping("/thanks")
     public String thanks(){
         return "home/thanks";
+    }
+    @GetMapping("/api/order/{id}")
+    @ResponseBody
+    public OrderDetailDTO getOrderDetail(@PathVariable Long id) {
+
+        
+
+        Order order = orderRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        OrderDetailDTO dto = new OrderDetailDTO();
+        dto.setId(order.getId());
+        dto.setTotalPrice(order.getTotalPrice());
+        
+        List<OrderDetailDTO.Item> items = order.getDetails().stream().map(detail -> {
+            OrderDetailDTO.Item item = new OrderDetailDTO.Item();
+            item.setProductName(detail.getProducts().getName());
+            item.setQuantity(detail.getQuantity());
+            item.setPrice(detail.getPrice());
+            return item;
+        }).toList();
+        
+        dto.setDetails(items);
+        return dto;
     }
 
 }
