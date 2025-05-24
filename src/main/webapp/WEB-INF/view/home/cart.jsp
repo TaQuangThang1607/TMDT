@@ -62,7 +62,7 @@
                 <thead>
                   <tr>
                     <!-- Set columns width -->
-                    <th class="text-center py-3 px-4" style="min-width: 400px;">Product Name &amp; Details</th>
+                    <th class="text-center py-3 px-4" style="min-width: 200px;">Product Name &amp; Details</th>
                     <th class="text-right py-3 px-4" style="width: 100px;">Price</th>
                     <th class="text-center py-3 px-4" style="width: 120px;">Quantity</th>
                     <th class="text-right py-3 px-4" style="width: 100px;">Total</th>
@@ -70,50 +70,72 @@
                   </tr>
                 </thead>
                 <tbody>
-                <c:forEach var="cartItems" items="${cartItems}">
-                  <tr>
-                      <td class="p-4">
-                          <div class="media align-items-center">
-                              <div>
-                                  <img src="/images/product/${cartItems.product.imageUrl}"
-                                      class="product-thumb"
-                                      alt="Product Image"
-                                      width="60"
-                                      onclick="zoomImage(this.src)">
-                              </div>
-                              <div class="media-body">
-                                  <a href="#" class="d-block text-dark">${cartItems.product.name}</a>
-                                  <small>
-                                      <span class="text-muted">${cartItems.product.color}</span>
-                                      <span class="ui-product-color ui-product-color-sm align-text-bottom" style="background:#e81e2c;"></span>  
-                                      <span class="text-muted">Size: </span> ${cartItems.product.size}  
-                                  </small>
-                              </div>
-                          </div>
-                      </td>
-                      <td class="text-right font-weight-semibold align-middle p-4">${cartItems.product.price} đ</td>
-                      <td class="align-middle p-4">
-                          <form action="/update-cart-quantity/${cartItems.id}" method="post">
-                              <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-                              <input type="number" name="quantity" class="form-control text-center" 
-                                    value="${cartItems.quantity}" min="1" onchange="this.form.submit()">
-                          </form>
-                      </td>
-                      <td class="text-right font-weight-semibold align-middle p-4">${cartItems.quantity * cartItems.product.price} đ</td>
-                      <td class="text-center align-middle px-0">
-                          <form action="/delete-cart-product/${cartItems.id}" method="post">
-                              <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-                              <button type="submit" class="shop-tooltip close float-none text-danger" 
-                                      title="" data-original-title="Remove">×</button>
-                          </form>
-                      </td>
-                  </tr>
-              </c:forEach>
-              <tr>
-                  <td colspan="3" class="text-right font-weight-semibold p-4">Tổng cộng:</td>
-                  <td class="text-right font-weight-semibold p-4">${totalCartPrice} đ</td>
-                  <td></td>
-              </tr>
+                    <c:forEach var="cartItem" items="${cartItems}" varStatus="status">
+                        <tr>
+                            <td class="p-4">
+                                <div class="media align-items-center">
+                                    <div>
+                                        <img src="/images/product/${cartItem.product.imageUrl}"
+                                            class="product-thumb"
+                                            alt="Product Image"
+                                            width="60"
+                                            onclick="zoomImage(this.src)">
+                                    </div>
+                                    <div class="media-body">
+                                        <a href="#" class="d-block text-dark">${cartItem.product.name}</a>
+                                        <small>
+                                            <span class="text-muted">${cartItem.product.color}</span>
+                                            <span class="ui-product-color ui-product-color-sm align-text-bottom" style="background:#e81e2c;"></span> 
+                                            <span class="text-muted">Size: </span> ${cartItem.product.size}
+                                        </small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-right font-weight-semibold align-middle p-4" data-cart-item-price="${cartItem.product.price}">
+                                <fmt:formatNumber type="number" value="${cartItem.product.price}" /> đ
+                            </td>
+                            <td class="align-middle p-4">
+                                <div class="input-group quantity" style="width: 100px;">
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-sm btn-minus rounded-circle bg-light border">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                    </div>
+                                    <input type="text" 
+                                        class="form-control form-control-sm text-center border-0" 
+                                        value="${cartItem.quantity}"
+                                        data-cart-item-id="${cartItem.id}"
+                                        data-cart-item-price="${cartItem.product.price}"
+                                        data-cart-item-index="${status.index}"
+                                        readonly>
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-sm btn-plus rounded-circle bg-light border">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-right font-weight-semibold align-middle p-4" data-cart-item-total="${cartItem.id}">
+                                <fmt:formatNumber type="number" value="${cartItem.quantity * cartItem.product.price}" /> đ
+                            </td>
+                            <td class="text-center align-middle px-0">
+                                <form action="/delete-cart-product/${cartItem.id}" method="post">
+                                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                                    <button type="submit" class="shop-tooltip close float-none text-danger" 
+                                            title="" data-original-title="Remove">×</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                
+             
+                        <tr>
+                            <td colspan="3" class="text-right font-weight-semibold p-4">Tổng cộng:</td>
+                            <td class="text-right font-weight-semibold p-4" data-cart-total>
+                                <fmt:formatNumber type="number" value="${totalPrice}" /> đ
+                            </td>
+                            <td></td>
+                        </tr>
 
                 </tbody>
               </table>
@@ -125,44 +147,46 @@
                 <label class="text-muted font-weight-normal">Promocode</label>
                 <input type="text" placeholder="ABC" class="form-control">
               </div>
-              <div class="d-flex">
-                <div class="text-right mt-4 mr-5">
-                  <label class="text-muted font-weight-normal m-0">Discount</label>
-                  <div class="text-large"><strong>$20</strong></div>
-                </div>
-                <div class="text-right mt-4">
-                  <label class="text-muted font-weight-normal m-0">Total price</label>
-                  <div class="text-large"><strong>$1164.65</strong></div>
-                </div>
-              </div>
+              
             </div>
             <form:form action="/confirm-checkout" method="post" modelAttribute="cart">
-                      <input type="hidden" name="${_csrf.parameterName}"
-                        value="${_csrf.token}" />
+                  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
-                  <div style="display: block;">
-                    <c:forEach var="cartItem" items="${cart.cartItems}"  varStatus="status">
-                        <div class="mb-3">
-                            <div class="form-group">
-                                <label for="">Id:</label>
-                                <input type="text"  class="form-control" value="${cartItem.id}"
-                                path="cartItems[${status.index}].id" />
-                            </div>
+                  <div style="display: none;">
+                      <c:forEach var="cartItem" items="${cart.cartItems}" varStatus="status">
+                          <div class="mb-3">
+                              <!-- CartItem ID -->
+                              <div class="form-group">
+                                  <label for="">Id:</label>
+                                  <input type="text" class="form-control" value="${cartItem.id}"
+                                        name="cartItems[${status.index}].id" />
+                              </div>
 
-                            <div class="form-group">
-                                <label for="">Quantity:</label>
-                                <input type="number"  class="form-control" value="${cartItem.quantity}"
-                                path="cartItems[${status.index}].quantity" />
-                            </div>
+                              <!-- Quantity -->
+                              <div class="form-group">
+                                  <label for="">Quantity:</label>
+                                  <input type="number" class="form-control" value="${cartItem.quantity}"
+                                        name="cartItems[${status.index}].quantity" />
+                              </div>
 
-                        </div>
-                    </c:forEach>
-
+                              <!-- Product Information -->
+                              <input type="hidden" name="cartItems[${status.index}].product.id" value="${cartItem.product.id}" />
+                              <input type="hidden" name="cartItems[${status.index}].product.name" value="${cartItem.product.name}" />
+                              <input type="hidden" name="cartItems[${status.index}].product.price" value="${cartItem.product.price}" />
+                              <input type="hidden" name="cartItems[${status.index}].product.color" value="${cartItem.product.color}" />
+                              <input type="hidden" name="cartItems[${status.index}].product.size" value="${cartItem.product.size}" />
+                              <input type="hidden" name="cartItems[${status.index}].product.imageUrl" value="${cartItem.product.imageUrl}" />
+                          </div>
+                      </c:forEach>
                   </div>
-              <div class="float-right">
-                <button type="submit" class="btn btn-lg btn-primary mt-2">Checkout</button>
-              </div>
+
+                  <div class="float-right">
+                      <button type="submit" class="btn btn-lg btn-primary mt-2">Checkout</button>
+                  </div>
             </form:form>
+
+
+            
             <a href="/">Quy ve trang chu</a>
 
           </div>
@@ -203,5 +227,6 @@
 
                     <!-- Template Javascript -->
                     <script src="/js/main.js"></script>
+                    <script src="/js/cart.js"></script>
 </body>
 </html>

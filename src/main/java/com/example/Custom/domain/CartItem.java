@@ -1,6 +1,8 @@
 package com.example.Custom.domain;
 
 
+import java.io.Serializable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,7 +17,10 @@ import lombok.Data;
 @Entity
 @Table(name = "cart_items")
 @Data
-public class CartItem {
+public class CartItem implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

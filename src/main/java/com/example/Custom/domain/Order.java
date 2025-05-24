@@ -19,26 +19,26 @@ import lombok.Data;
 @Table(name = "orders")
 @Data
 public class Order {
-    @Id
+     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
+
+    private double totalPrice;
+
+    private String receiverName;
+
+    private String receiverAddress;
+
+    private String receiverPhone;
+
+    private String receiverNote;
+
+    private String status;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
-    private BigDecimal totalAmout;
-
-    @Column(nullable = false)
-    private String status;
-
-    private String shippingAddress;
-
-    private String paymentMethod; // COD, BANK_TRANSFER, MOMO...
-
-    private LocalDateTime orderDate;
-
     @OneToMany(mappedBy = "order")
-    private List<OrderItem> orderItem;
+    private List<OrderDetail> details;
 }
