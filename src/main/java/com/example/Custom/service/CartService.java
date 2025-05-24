@@ -105,28 +105,25 @@ public class CartService {
     }
 
 
-    public void handlePlaceOrder(Order order, List<CheckoutCartDTO.CheckoutCartItemDTO> cartItems) {
-        order = orderRepository.save(order);
+    @Transactional
+    public void handlePlaceOrder(Order order, List<CheckoutCartDTO.CheckoutCartItemDTO> checkoutItems) {
+        orderRepository.save(order);
 
-        for (CheckoutCartDTO.CheckoutCartItemDTO item : cartItems) {
-            OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setOrder(order);
-            Product product = productRepository.findById(item.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
-            orderDetail.setProducts(product);
-            orderDetail.setPrice(item.getPrice());
-            orderDetail.setQuantity(item.getQuantity());
-            orderDetailRepository.save(orderDetail);
+        for (CheckoutCartDTO.CheckoutCartItemDTO itemDTO : checkoutItems) {
+            OrderDetail detail = new OrderDetail();
+            detail.setOrder(order);
+            detail.setProducts(productRepository.findById(itemDTO.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + itemDTO.getProductId())));
+            detail.setPrice(itemDTO.getPrice());
+            detail.setQuantity(itemDTO.getQuantity());
+            orderDetailRepository.save(detail);
         }
 
-        // Xóa giỏ hàng
+        // 3. Xóa CartItem của user (giỏ hàng)
         User user = order.getUser();
         Cart cart = cartRepository.findByUser(user);
         if (cart != null) {
-            List<CartItem> cartItemss = cart.getCartItems();
-            for (CartItem ci : cartItemss) {
-                cartItemRepository.deleteById(ci.getId());
-            }
-            cartRepository.deleteById(cart.getId());
+            cartItemRepository.deleteByCart(cart);
         }
     }
 }
