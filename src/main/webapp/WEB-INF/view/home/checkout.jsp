@@ -60,7 +60,7 @@
             <div class="container py-5">
                 <h1 class="mb-4">Billing details</h1>
                     <div class="row g-5">
-                        <form:form action="/place-order" method="post" modelAttribute="order">
+                        <form:form action="/place-order" method="post" modelAttribute="orderDTO">
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
                             <div class="col-md-12 col-lg-6 col-xl-7">

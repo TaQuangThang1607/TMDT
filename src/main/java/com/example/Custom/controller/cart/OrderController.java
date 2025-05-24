@@ -15,8 +15,11 @@ import com.example.Custom.domain.CartItem;
 import com.example.Custom.domain.Order;
 import com.example.Custom.domain.User;
 import com.example.Custom.domain.dto.CheckoutCartDTO;
+import com.example.Custom.domain.dto.OrderDTO;
 import com.example.Custom.repository.CartItemRepository;
+import com.example.Custom.repository.UserRepository;
 import com.example.Custom.service.CartService;
+import com.example.Custom.service.OrderService;
 import com.example.Custom.service.ProductService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,13 +29,18 @@ import jakarta.servlet.http.HttpSession;
 public class OrderController {
     private ProductService productService;
     private CartItemRepository cartItemRepository;
+    private UserRepository userRepository; 
     private CartService cartService;
+    private OrderService orderService;
     
     public OrderController(ProductService productService,
-            CartItemRepository cartItemRepository, CartService cartService) {
+            CartItemRepository cartItemRepository, CartService cartService,
+             UserRepository userRepository, OrderService orderService) {
         this.productService = productService;
         this.cartItemRepository = cartItemRepository;
         this.cartService = cartService;
+        this.userRepository = userRepository;
+        this.orderService = orderService;
     }
 
     
@@ -92,9 +100,9 @@ public class OrderController {
     @GetMapping("/checkout")
     public String showCheckoutPage(Model model, HttpServletRequest request) {
         HttpSession session = request.getSession();
-        
+
         CheckoutCartDTO checkoutCart = (CheckoutCartDTO) session.getAttribute("checkoutCart");
-        
+
         Cart cart = null;
         List<CartItem> cartItems = new ArrayList<>();
         double total = 0;
@@ -113,42 +121,51 @@ public class OrderController {
             }
             model.addAttribute("cartItems", checkoutCart.getCartItems());
         }
-        
+
         model.addAttribute("totalPrice", total);
         model.addAttribute("cart", cart != null ? cart : checkoutCart);
-        model.addAttribute("order", new Order());
 
+        // CHỖ NÀY PHẢI ĐỔ RA ĐÚNG TÊN DTO TRÊN FORM:
+        model.addAttribute("orderDTO", new OrderDTO());
 
         return "home/checkout";
     }
 
+
     @PostMapping("/place-order")
-    public String getPlaceOrder(@ModelAttribute("order") Order order, HttpServletRequest request) {
+    public String placeOrder(@ModelAttribute("orderDTO") OrderDTO orderDTO, HttpServletRequest request) {
         HttpSession session = request.getSession();
-        User user = new User();
-        long id = (long) session.getAttribute("id");
-        user.setId(id);
+        Long userId = (Long) session.getAttribute("id");
 
-        // Lấy CheckoutCartDTO từ session để tính tổng giá
-        CheckoutCartDTO checkoutCart = (CheckoutCartDTO) session.getAttribute("checkoutCart");
-        if (checkoutCart != null && !checkoutCart.getCartItems().isEmpty()) {
-            double totalPrice = 0;
-            for (CheckoutCartDTO.CheckoutCartItemDTO item : checkoutCart.getCartItems()) {
-                totalPrice += item.getPrice() * item.getQuantity();
-            }
-            order.setTotalPrice(totalPrice);
-            order.setUser(user);
-            order.setStatus("PENDING");
-
-            // Lưu đơn hàng và chi tiết đơn hàng
-            cartService.handlePlaceOrder(order, checkoutCart.getCartItems());
-
-            // Xóa session
-            session.removeAttribute("checkoutCart");
-            session.setAttribute("sum", 0);
-            
+        if (userId == null) {
+            throw new RuntimeException("User is not logged in");
         }
 
+        User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+        CheckoutCartDTO checkoutCart = (CheckoutCartDTO) session.getAttribute("checkoutCart");
+
+        if (checkoutCart == null || checkoutCart.getCartItems().isEmpty()) {
+            throw new RuntimeException("Checkout cart is empty");
+        }
+
+        Order order = orderService.createOrderFromDTO(orderDTO, checkoutCart, user);
+
+        cartService.handlePlaceOrder(order, checkoutCart.getCartItems());
+
+        // Clean up session
+        session.removeAttribute("checkoutCart");
+        session.removeAttribute("cartItems");
+        session.removeAttribute("cart");
+        session.setAttribute("sum", 0);
+
         return "redirect:/thanks";
-    } 
+    }
+    
+    @GetMapping("/thanks")
+    public String thanks(){
+        return "home/thanks";
+    }
+
 }

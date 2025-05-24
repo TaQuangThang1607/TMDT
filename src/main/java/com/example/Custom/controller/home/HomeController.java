@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import com.example.Custom.domain.Cart;
+import com.example.Custom.domain.Order;
 import com.example.Custom.domain.User;
 import com.example.Custom.domain.dto.ProductDTO;
 import com.example.Custom.domain.dto.RegisterDTO;
 import com.example.Custom.repository.CartRepository;
+import com.example.Custom.service.OrderService;
 import com.example.Custom.service.ProductService;
 import com.example.Custom.service.UserService;
 
@@ -29,13 +31,16 @@ public class HomeController {
     private UserService userService;
     private PasswordEncoder passwordEncoder;
     private CartRepository cartRepository;
+    private OrderService orderService; 
 
     public HomeController(ProductService productService, UserService userService, 
-    PasswordEncoder passwordEncoder,CartRepository cartRepository) {
+    PasswordEncoder passwordEncoder,CartRepository cartRepository,
+    OrderService orderService) {
         this.productService = productService;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.cartRepository= cartRepository;
+        this.orderService = orderService;
     }
 
     @GetMapping("/")
@@ -100,5 +105,22 @@ public class HomeController {
     @GetMapping("/access-deny")
     public String getDenyPage(Model model) {
         return "home/deny";
+    }
+
+    @GetMapping("/history-order")
+    public String showHistoryPage(Model model, HttpServletRequest request){
+        User user = new User();
+        HttpSession session = request.getSession(false);
+        Long id = (Long) session.getAttribute("id");
+        user.setId(id); 
+
+        if(id == null){
+            return "redirect:/login";
+        }
+
+        List<Order> orders = orderService.getOrderByUser(user);
+        model.addAttribute("orderHitory", orders);
+        
+        return "home/history";
     }
 }
