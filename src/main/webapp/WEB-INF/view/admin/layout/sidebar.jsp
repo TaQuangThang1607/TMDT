@@ -25,7 +25,10 @@
                         <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                         Edit home
                     </a>
-
+                    <a class="nav-link" href="/admin/design-requests">
+                        <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        DesignRequest
+                    </a>
                 </div>
             </div>
             <div class="sb-sidenav-footer">
