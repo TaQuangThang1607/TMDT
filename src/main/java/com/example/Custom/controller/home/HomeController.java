@@ -123,4 +123,8 @@ public class HomeController {
         
         return "home/history";
     }
+    @GetMapping("/design")
+public String designPage() {
+    return "home/design";
+}
 }

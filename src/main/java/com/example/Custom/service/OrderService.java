@@ -56,4 +56,14 @@ public class OrderService {
     public List<Order> getOrderByUser(User user) {
         return orderRepository.findByUser(user);
     }
+    public List<Order> findAll() {
+    return orderRepository.findAll();
+}
+public Order findById(Long id) {
+    return orderRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Order not found"));
+}
+public Order save(Order order) {
+    return orderRepository.save(order);
+}
 }

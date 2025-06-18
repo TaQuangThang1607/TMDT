@@ -58,19 +58,19 @@ public class SecurityConfiguration {
         return rememberMeServices;
     }
 
-    @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(authorize -> authorize
-                        .dispatcherTypeMatchers(DispatcherType.FORWARD,
-                                DispatcherType.INCLUDE)
-                        .permitAll()
-                        // cho phep truy cap
-                        .requestMatchers("/", "/login", "/register", "/product/**", "/client/**", "/css/**", "/js/**",
-                                "/images/**")
-                        .permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated())
+@Bean
+SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+            .authorizeHttpRequests(authorize -> authorize
+                    .dispatcherTypeMatchers(DispatcherType.FORWARD,
+                            DispatcherType.INCLUDE)
+                    .permitAll()
+                    // cho phep truy cap
+                    .requestMatchers("/", "/login", "/register", "/product/**", "/client/**", "/css/**", "/js/**",
+                            "/images/**", "/submitDesign")
+                    .permitAll()
+                    .requestMatchers("/admin/**").hasRole("ADMIN")
+                    .anyRequest().authenticated())
 
                 // session
                 .sessionManagement((sessionManagement) -> sessionManagement
