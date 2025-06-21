@@ -10,13 +10,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.Custom.domain.Cart;
+import com.example.Custom.domain.Comment;
 import com.example.Custom.domain.Order;
 import com.example.Custom.domain.User;
 import com.example.Custom.domain.dto.ProductDTO;
 import com.example.Custom.domain.dto.RegisterDTO;
 import com.example.Custom.repository.CartRepository;
+import com.example.Custom.service.CommentService;
 import com.example.Custom.service.OrderService;
 import com.example.Custom.service.ProductService;
 import com.example.Custom.service.UserService;
@@ -24,24 +27,20 @@ import com.example.Custom.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @Controller
+@RequiredArgsConstructor
 public class HomeController {
-    private ProductService productService;
-    private UserService userService;
-    private PasswordEncoder passwordEncoder;
-    private CartRepository cartRepository;
-    private OrderService orderService; 
+    private final ProductService productService;
+    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+    private final CartRepository cartRepository;
+    private final OrderService orderService; 
+    private final CommentService commentService;
 
-    public HomeController(ProductService productService, UserService userService, 
-    PasswordEncoder passwordEncoder,CartRepository cartRepository,
-    OrderService orderService) {
-        this.productService = productService;
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-        this.cartRepository= cartRepository;
-        this.orderService = orderService;
-    }
+
+    
 
     @GetMapping("/")
     public String showHome(Model model) {
@@ -124,7 +123,37 @@ public class HomeController {
         return "home/history";
     }
     @GetMapping("/design")
-public String designPage() {
-    return "home/design";
-}
+    public String designPage() {
+        return "home/design";
+    }
+
+    @GetMapping("/product/{id}")
+    public String showProductDetail(@PathVariable Long id, Model model, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("id") == null) {
+            return "redirect:/login";
+        }
+
+        ProductDTO product = productService.getProductById(id);
+        List<Comment> comments = commentService.getCommentsByProduct(id);
+        model.addAttribute("product", product);
+        model.addAttribute("comments", comments);
+        model.addAttribute("newComment", new Comment());
+        return "home/product-detail";
+    }
+
+    @PostMapping("/product/{id}/comment")
+    public String addComment(@PathVariable Long id,
+                             @ModelAttribute("newComment") Comment newComment,
+                             @RequestParam(value = "parentCommentId", required = false) Long parentCommentId,
+                             HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("id") == null) {
+            return "redirect:/login";
+        }
+
+        Long userId = (Long) session.getAttribute("id");
+        commentService.addComment(id, userId, newComment.getContent(), parentCommentId);
+        return "redirect:/product/" + id;
+    }
 }

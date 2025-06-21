@@ -13,6 +13,7 @@ public class ProductDTO {
     private String color;
     private String material;
     private Integer stock;
+    private Integer soldQuantity;
     private Long categoryId;
     private String categoryName;
     private String imageUrl;

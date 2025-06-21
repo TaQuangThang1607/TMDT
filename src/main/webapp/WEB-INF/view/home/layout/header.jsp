@@ -17,7 +17,7 @@
                                 <div class="navbar-nav mx-auto">
                                     <a href="/" class="nav-item nav-link active">Home</a>
                                     <a href="/design" class="nav-item nav-link">Design</a>
-                                    <a href="shop.html" class="nav-item nav-link">Shop</a>
+                                    <a href="shop.html" class="nav-item nav-link">Products</a>
                                     <a href="shop-detail.html" class="nav-item nav-link">Shop Detail</a>
 
                                     <a href="contact.html" class="nav-item nav-link">Contact</a>

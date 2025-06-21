@@ -2,7 +2,10 @@ package com.example.Custom.domain;
 
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -39,9 +43,15 @@ public class Product implements Serializable{
     @Column(nullable = false)
     private Integer stock;
 
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    private Integer soldQuantity;
+
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
     private String imageUrl;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 }

@@ -1,10 +1,11 @@
 package com.example.Custom.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.Custom.domain.Cart;
@@ -121,48 +122,68 @@ public class ProductService {
 
     public void handleAddToProduct(String email, Long productId, HttpSession session) {
         User user = userService.getUserByEmail(email);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found with email: " + email);
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+
+        if (product.getStock() <= 0) {
+            throw new RuntimeException("Product is out of stock: " + product.getName());
         }
 
-        // Tìm hoặc tạo mới Cart
         Cart cart = cartRepository.findByUser(user);
         if (cart == null) {
             cart = new Cart();
             cart.setUser(user);
-            cart.setCartItems(new ArrayList<>());
             cart = cartRepository.save(cart);
         }
 
-        // Tìm sản phẩm
-        Optional<Product> productOptional = productRepository.findById(productId);
-        if (!productOptional.isPresent()) {
-            throw new IllegalArgumentException("Product not found with ID: " + productId);
-        }
-        Product product = productOptional.get();
+        Optional<CartItem> existingCartItem = cart.getCartItems().stream()
+            .filter(item -> item.getProduct().getId().equals(productId))
+            .findFirst();
 
-        CartItem existingItem = cartItemRepository.findByCartAndProduct(cart, product);
-        if (existingItem == null) {
+        if (existingCartItem.isPresent()) {
+            CartItem cartItem = existingCartItem.get();
+            int newQuantity = cartItem.getQuantity() + 1;
+            if (newQuantity > product.getStock()) {
+                throw new RuntimeException("Not enough stock for product: " + product.getName());
+            }
+            cartItem.setQuantity(newQuantity);
+            cartItem.setPrice(product.getPrice());
+            cartItemRepository.save(cartItem);
+        } else {
             CartItem cartItem = new CartItem();
             cartItem.setCart(cart);
             cartItem.setProduct(product);
-            cartItem.setPrice(product.getPrice());
             cartItem.setQuantity(1);
-
-            cart.getCartItems().add(cartItem);
+            cartItem.setPrice(product.getPrice());
             cartItemRepository.save(cartItem);
-        } else {
-            existingItem.setQuantity(existingItem.getQuantity() + 1);
-            cartItemRepository.save(existingItem);
         }
 
-        cartRepository.save(cart);
-
-        if (session != null) {
-            session.setAttribute("sum", cart.getCartItems().size());
-        }
+        session.setAttribute("sum", cart.getCartItems().size());
     }
-    
+        public Page<ProductDTO> getProductsWithFilters(String name, Double minPrice, Double maxPrice, Long categoryId,
+                                                   String size, String color, String material, Integer minStock,
+                                                   Integer minSold, Pageable pageable) {
+        Category category = categoryId != null ? categoryRepository.findById(categoryId).orElse(null) : null;
+        Page<Product> products = productRepository.findByFilters(name, minPrice, maxPrice, category, size, color,
+                material, minStock, minSold, pageable);
+        return products.map(this::mapToDto);
+    }
+
+    public List<Category> getAllCategories() {
+        return categoryRepository.findAll();
+    }
+
+    public List<String> getAllSizes() {
+        return productRepository.findDistinctSizes();
+    }
+
+    public List<String> getAllColors() {
+        return productRepository.findDistinctColors();
+    }
+
+    public List<String> getAllMaterials() {
+        return productRepository.findDistinctMaterials();
+    }
 
     
 }
