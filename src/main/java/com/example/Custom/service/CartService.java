@@ -1,5 +1,6 @@
 package com.example.Custom.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +13,9 @@ import com.example.Custom.domain.Order;
 import com.example.Custom.domain.OrderDetail;
 import com.example.Custom.domain.Product;
 import com.example.Custom.domain.User;
+import com.example.Custom.domain.dto.CartDTO;
 import com.example.Custom.domain.dto.CheckoutCartDTO;
+import com.example.Custom.domain.dto.CartItemDTO;
 import com.example.Custom.repository.CartItemRepository;
 import com.example.Custom.repository.CartRepository;
 import com.example.Custom.repository.OrderDetailRepository;
@@ -110,20 +113,57 @@ public class CartService {
         orderRepository.save(order);
 
         for (CheckoutCartDTO.CheckoutCartItemDTO itemDTO : checkoutItems) {
+            // Lấy sản phẩm từ repository
+            Product product = productRepository.findById(itemDTO.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + itemDTO.getProductId()));
+
+            // Giảm số lượng stock
+            int newStock = product.getStock() - itemDTO.getQuantity();
+            if (newStock < 0) {
+                throw new RuntimeException("Not enough stock for product: " + product.getName());
+            }
+            product.setStock(newStock);
+
+            // Tăng số lượng đã bán
+            product.setSoldQuantity(product.getSoldQuantity() + itemDTO.getQuantity());
+
+            // Lưu lại sản phẩm
+            productRepository.save(product);
+
+            // Lưu chi tiết đơn hàng
             OrderDetail detail = new OrderDetail();
             detail.setOrder(order);
-            detail.setProducts(productRepository.findById(itemDTO.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + itemDTO.getProductId())));
+            detail.setProducts(product);
             detail.setPrice(itemDTO.getPrice());
             detail.setQuantity(itemDTO.getQuantity());
             orderDetailRepository.save(detail);
         }
 
-        // 3. Xóa CartItem của user (giỏ hàng)
+        // Xóa CartItem của user (giỏ hàng)
         User user = order.getUser();
         Cart cart = cartRepository.findByUser(user);
         if (cart != null) {
             cartItemRepository.deleteByCart(cart);
         }
+    }
+
+    public CartDTO convertToDTO(Cart cart) {
+        CartDTO dto = new CartDTO();
+        dto.setId(cart.getId());
+        dto.setUserId(cart.getUser().getId());
+        List<CartItemDTO> itemDTOs = new ArrayList<>();
+        if (cart.getCartItems() != null) {
+            for (CartItem item : cart.getCartItems()) {
+                CartItemDTO itemDTO = new CartItemDTO();
+                itemDTO.setId(item.getId());
+                itemDTO.setProductId(item.getProduct().getId());
+                itemDTO.setProductName(item.getProduct().getName());
+                itemDTO.setQuantity(item.getQuantity());
+                itemDTO.setPrice(item.getPrice());
+                itemDTOs.add(itemDTO);
+            }
+        }
+        dto.setCartItems(itemDTOs);
+        return dto;
     }
 }
