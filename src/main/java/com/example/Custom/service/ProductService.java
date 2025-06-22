@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.CartItem;
@@ -185,5 +186,20 @@ public class ProductService {
         return productRepository.findDistinctMaterials();
     }
 
-    
+    public List<Product> getRecommendedProducts() {
+        return productRepository.findByRecommendedTrue();
+    }
+
+    // lấy tất cả sản phẩm 
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
+    @Transactional
+    public Product toggleRecommendation(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        product.setRecommended(!product.isRecommended());
+        return productRepository.save(product);
+    }
 }

@@ -29,16 +29,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userService.getUserByEmail(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        com.example.Custom.domain.User user = userService.getUserByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException("user not foung");
+            throw new UsernameNotFoundException("User not found with email: " + email);
         }
-        String roleName = user.getRole() != null && user.getRole().getId() == 1 ? "ADMIN" : "USER";
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + roleName)));
+            user.getEmail(),
+            user.getPassword(),
+            Collections.singletonList(new SimpleGrantedAuthority(user.getRole().getName()))
+        );
     }
 
 }

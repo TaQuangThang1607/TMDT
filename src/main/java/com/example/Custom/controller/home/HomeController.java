@@ -2,6 +2,8 @@ package com.example.Custom.controller.home;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,12 +13,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Pageable;
 
 import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.Comment;
 import com.example.Custom.domain.Order;
 import com.example.Custom.domain.User;
 import com.example.Custom.domain.dto.ProductDTO;
+import com.example.Custom.domain.dto.ProductFilterParams;
 import com.example.Custom.domain.dto.RegisterDTO;
 import com.example.Custom.repository.CartRepository;
 import com.example.Custom.service.CommentService;
@@ -46,6 +50,8 @@ public class HomeController {
     public String showHome(Model model) {
         List<ProductDTO> dtos = productService.getAllProduct();
         model.addAttribute("product", dtos);
+        model.addAttribute("recommendedProducts", productService.getRecommendedProducts());
+
         return "home/index";
     }
 
@@ -129,10 +135,7 @@ public class HomeController {
 
     @GetMapping("/product/{id}")
     public String showProductDetail(@PathVariable Long id, Model model, HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("id") == null) {
-            return "redirect:/login";
-        }
+        
 
         ProductDTO product = productService.getProductById(id);
         List<Comment> comments = commentService.getCommentsByProduct(id);
@@ -156,4 +159,38 @@ public class HomeController {
         commentService.addComment(id, userId, newComment.getContent(), parentCommentId);
         return "redirect:/product/" + id;
     }
+
+    //danh sach san pham
+    @GetMapping("/products")
+    public String showProducts(Model model,
+                              @RequestParam(value = "page", defaultValue = "0") int page,
+                              @RequestParam(value = "size", defaultValue = "10") int size,
+                              @RequestParam(value = "name", required = false) String name,
+                              @RequestParam(value = "minPrice", required = false) Double minPrice,
+                              @RequestParam(value = "maxPrice", required = false) Double maxPrice,
+                              @RequestParam(value = "categoryId", required = false) Long categoryId,
+                              @RequestParam(value = "sizeFilter", required = false) String sizeFilter,
+                              @RequestParam(value = "color", required = false) String color,
+                              @RequestParam(value = "material", required = false) String material,
+                              @RequestParam(value = "minStock", required = false) Integer minStock,
+                              @RequestParam(value = "minSold", required = false) Integer minSold) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductDTO> productPage = productService.getProductsWithFilters(name, minPrice, maxPrice, categoryId,
+                sizeFilter, color, material, minStock, minSold, pageable);
+
+        model.addAttribute("products", productPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", productPage.getTotalPages());
+        model.addAttribute("totalItems", productPage.getTotalElements());
+        model.addAttribute("categories", productService.getAllCategories());
+        model.addAttribute("sizes", productService.getAllSizes());
+        model.addAttribute("colors", productService.getAllColors());
+        model.addAttribute("materials", productService.getAllMaterials());
+        model.addAttribute("filterParams", new ProductFilterParams(name, minPrice, maxPrice, categoryId, sizeFilter,
+                color, material, minStock, minSold));
+
+        return "home/products";
+    }
+
+   
 }
