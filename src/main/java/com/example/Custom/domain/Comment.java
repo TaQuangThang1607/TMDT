@@ -39,6 +39,9 @@ public class Comment {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "is_approved", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isApproved;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

@@ -15,14 +15,14 @@ import com.example.Custom.domain.Product;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    @Query("SELECT p FROM Product p WHERE " +
-           "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+   @Query("SELECT p FROM Product p WHERE " +
+           "(:name IS NULL OR :name = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
            "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
            "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
            "(:category IS NULL OR p.category = :category) AND " +
-           "(:size IS NULL OR p.size = :size) AND " +
-           "(:color IS NULL OR p.color = :color) AND " +
-           "(:material IS NULL OR p.material = :material) AND " +
+           "(:size IS NULL OR :size = '' OR LOWER(TRIM(p.size)) = LOWER(TRIM(:size))) AND " +
+           "(:color IS NULL OR :color = '' OR LOWER(TRIM(p.color)) = LOWER(TRIM(:color))) AND " +
+           "(:material IS NULL OR :material = '' OR LOWER(TRIM(p.material)) = LOWER(TRIM(:material))) AND " +
            "(:minStock IS NULL OR p.stock >= :minStock) AND " +
            "(:minSold IS NULL OR p.soldQuantity >= :minSold)")
     Page<Product> findByFilters(
@@ -37,7 +37,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("minSold") Integer minSold,
             Pageable pageable);
 
-    // Lấy danh sách kích thước, màu sắc, chất liệu duy nhất
     @Query("SELECT DISTINCT p.size FROM Product p WHERE p.size IS NOT NULL")
     List<String> findDistinctSizes();
 
@@ -46,4 +45,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT DISTINCT p.material FROM Product p WHERE p.material IS NOT NULL")
     List<String> findDistinctMaterials();
+
+    // gợi ý sản phẩm
+    List<Product> findByRecommendedTrue();
+
+    @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Product> searchByName(@Param("keyword") String keyword, Pageable pageable);
+
 }

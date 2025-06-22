@@ -9,6 +9,8 @@ import com.example.Custom.repository.UserRepository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,5 +58,42 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
         commentRepository.delete(comment);
+    }
+     public Page<Comment> getCommentsByProduct(Long productId, Pageable pageable) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return commentRepository.findByFilters(product, null, null, pageable);
+    }
+
+    public Page<Comment> getAllCommentsWithFilters(Long productId, Long userId, Long parentCommentId, Pageable pageable) {
+        Product product = productId != null ? productRepository.findById(productId).orElse(null) : null;
+        User user = userId != null ? userRepository.findById(userId).orElse(null) : null;
+        Comment parentComment = parentCommentId != null ? commentRepository.findById(parentCommentId).orElse(null) : null;
+        return commentRepository.findByFilters(product, user, parentComment, pageable);
+    }
+
+    @Transactional
+    public void updateComment(Long commentId, String content) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+        comment.setContent(content);
+        commentRepository.save(comment);
+    }
+
+
+    @Transactional
+    public Comment replyToComment(Long commentId, String content, Long adminId) {
+        Comment parentComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        Comment reply = new Comment();
+        reply.setContent(content);
+        reply.setProduct(parentComment.getProduct());
+        reply.setUser(admin);
+        reply.setParentComment(parentComment);
+
+        return commentRepository.save(reply);
     }
 }

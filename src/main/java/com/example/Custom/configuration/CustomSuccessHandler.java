@@ -71,7 +71,9 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
             session.setAttribute("id", user.getId());
             session.setAttribute("email", user.getEmail());
             session.setAttribute("roleId", user.getRole().getId());
-
+            // Lưu tên vai trò vào session
+            session.setAttribute("role", user.getRole().getName()); // Sử dụng "ROLE_ADMIN"
+            
             int cartItemCount = (user.getCart() == null || user.getCart().getCartItems() == null) 
                 ? 0 
                 : user.getCart().getCartItems().size();

@@ -81,8 +81,8 @@
                         <i class="fas fa-car-side fa-3x text-white"></i>
                     </div>
                     <div class="featurs-content text-center">
-                        <h5>Free Shipping</h5>
-                        <p class="mb-0">Free on order over $300</p>
+                        <h5>Miễn phí vận chuyển</h5>
+                        <p class="mb-0"></p>
                     </div>
                 </div>
             </div>
@@ -92,8 +92,8 @@
                         <i class="fas fa-user-shield fa-3x text-white"></i>
                     </div>
                     <div class="featurs-content text-center">
-                        <h5>Security Payment</h5>
-                        <p class="mb-0">100% security payment</p>
+                        <h5>Thanh toán bảo mật</h5>
+                        <p class="mb-0"></p>
                     </div>
                 </div>
             </div>
@@ -103,8 +103,8 @@
                         <i class="fas fa-exchange-alt fa-3x text-white"></i>
                     </div>
                     <div class="featurs-content text-center">
-                        <h5>30 Day Return</h5>
-                        <p class="mb-0">30 day money guarantee</p>
+                        <h5>Trả hàng trong 7 ngày</h5>
+                        <p class="mb-0"></p>
                     </div>
                 </div>
             </div>
@@ -114,8 +114,8 @@
                         <i class="fa fa-phone-alt fa-3x text-white"></i>
                     </div>
                     <div class="featurs-content text-center">
-                        <h5>24/7 Support</h5>
-                        <p class="mb-0">Support every time fast</p>
+                        <h5>Hỗ trợ 24/7</h5>
+                        <p class="mb-0"></p>
                     </div>
                 </div>
             </div>
@@ -123,6 +123,32 @@
     </div>
 </div>
 <!-- Featurs Section End -->
+
+ <!-- Recommended Products Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Sản phẩm gợi ý</h2>
+            <div class="row">
+                <c:forEach items="${recommendedProducts}" var="product">
+                    <div class="col-md-3 mb-4">
+                        <div class="card product-card">
+                            <img src="${product.imageUrl}" class="card-img-top" alt="${product.name}">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">${product.name}</h5>
+                                <p class="card-text">
+                                    <fmt:formatNumber value="${product.price}" type="currency" currencySymbol="đ" />
+                                </p>
+                                <a href="/cart/add/${product.id}" class="btn btn-primary">Thêm vào giỏ hàng</a>
+                            </div>
+                        </div>
+                    </div>
+                </c:forEach>
+                <c:if test="${empty recommendedProducts}">
+                    <p class="text-center">Hiện tại không có sản phẩm gợi ý.</p>
+                </c:if>
+            </div>
+        </div>
+    </section>
 
 <!-- Fruits Shop Start-->
 <div class="container-fluid fruite py-5">

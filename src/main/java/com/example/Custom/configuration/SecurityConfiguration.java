@@ -66,7 +66,7 @@ SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                             DispatcherType.INCLUDE)
                     .permitAll()
                     // cho phep truy cap
-                    .requestMatchers("/", "/login", "/register", "/product/**", "/client/**", "/css/**", "/js/**",
+                    .requestMatchers("/", "/login", "/register", "/product/**","/products/**", "/client/**", "/css/**", "/js/**",
                             "/images/**", "/submitDesign")
                     .permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
