@@ -1,5 +1,6 @@
 package com.example.Custom.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -121,8 +122,13 @@ public class ProductService {
 
 
 
+    @Transactional
     public void handleAddToProduct(String email, Long productId, HttpSession session) {
         User user = userService.getUserByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found with email: " + email);
+        }
+
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
 
@@ -134,6 +140,7 @@ public class ProductService {
         if (cart == null) {
             cart = new Cart();
             cart.setUser(user);
+            cart.setCartItems(new ArrayList<>()); // Khởi tạo danh sách rỗng
             cart = cartRepository.save(cart);
         }
 
@@ -156,11 +163,16 @@ public class ProductService {
             cartItem.setProduct(product);
             cartItem.setQuantity(1);
             cartItem.setPrice(product.getPrice());
+            cart.getCartItems().add(cartItem); // Thêm vào danh sách cartItems
             cartItemRepository.save(cartItem);
         }
 
-        session.setAttribute("sum", cart.getCartItems().size());
+        // Cập nhật số lượng sản phẩm trong session
+        int cartItemCount = cartItemRepository.countByCart(cart);
+        session.setAttribute("sum", cartItemCount);
     }
+
+
         public Page<ProductDTO> getProductsWithFilters(String name, Double minPrice, Double maxPrice, Long categoryId,
                                                    String size, String color, String material, Integer minStock,
                                                    Integer minSold, Pageable pageable) {

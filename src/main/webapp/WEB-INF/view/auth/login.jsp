@@ -60,6 +60,17 @@
                                                     </div>
                                                 </form>
                                             </div>
+
+                                            <div class="social-login">
+                                                <a href="/oauth2/authorization/google" class="btn btn-danger mb-2">
+                                                    <i class="fab fa-google"></i> Đăng nhập bằng Google
+                                                </a>
+                                                <br>
+                                                <a href="/oauth2/authorization/facebook" class="btn btn-primary">
+                                                    <i class="fab fa-facebook-f"></i> Đăng nhập bằng Facebook
+                                                </a>
+                                            </div>
+
                                             <div class="card-footer text-center py-3">
                                                 <div class="small"><a href="/register">Need an account? Sign up!</a>
                                                 </div>

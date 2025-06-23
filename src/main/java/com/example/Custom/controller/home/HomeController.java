@@ -1,5 +1,7 @@
 package com.example.Custom.controller.home;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -90,20 +92,21 @@ public class HomeController {
 
 
     @PostMapping("/add-product-to-cart/{id}")
-    public String addToCart(@PathVariable Long id,HttpServletRequest request){
+    public String addToCart(@PathVariable Long id, HttpServletRequest request) {
         HttpSession session = request.getSession();
         String email = (String) session.getAttribute("email");
-    
-        // Thêm sản phẩm vào giỏ
-        this.productService.handleAddToProduct(email, id,session);
-    
-        // Cập nhật lại số lượng trong session
-        User user = userService.getUserByEmail(email);
-        Cart cart = cartRepository.findByUser(user);
-        session.setAttribute("sum", cart.getCartItems().size());
-    
-    return "redirect:/";
+        if (email == null) {
+            return "redirect:/login";
+        }
 
+        try {
+            // Thêm sản phẩm vào giỏ
+            this.productService.handleAddToProduct(email, id, session);
+            return "redirect:/";
+        } catch (RuntimeException e) {
+            // Truyền thông báo lỗi qua redirect
+            return "redirect:/?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+        }
     }
 
 

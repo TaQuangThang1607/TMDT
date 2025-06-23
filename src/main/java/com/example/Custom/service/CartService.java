@@ -83,16 +83,7 @@ public class CartService {
         return this.cartRepository.findByUser(user);
     }
 
-    public void handleUpdateCartBeforeCheckout(List<CartItem> CartItems) {
-        for (CartItem CartItem : CartItems) {
-            Optional<CartItem> cdOptional = this.cartItemRepository.findById(CartItem.getId());
-            if (cdOptional.isPresent()) {
-                CartItem currentCardDetail = cdOptional.get();
-                currentCardDetail.setQuantity(CartItem.getQuantity());
-                this.cartItemRepository.save(currentCardDetail);
-            }
-        }
-    }
+    
     public void updateCartItemQuantity(Long cartItemId, int quantity) {
         Optional<CartItem> cartItemOpt = cartItemRepository.findById(cartItemId);
         if (cartItemOpt.isPresent()) {
@@ -166,4 +157,13 @@ public class CartService {
         dto.setCartItems(itemDTOs);
         return dto;
     }
+
+    public void handleUpdateCartBeforeCheckout(List<CartItemDTO> cartItemDTOs) {
+    for (CartItemDTO dto : cartItemDTOs) {
+        CartItem cartItem = cartItemRepository.findById(dto.getId())
+            .orElseThrow(() -> new RuntimeException("CartItem not found"));
+        cartItem.setQuantity(dto.getQuantity());
+        cartItemRepository.save(cartItem);
+    }
+}
 }
