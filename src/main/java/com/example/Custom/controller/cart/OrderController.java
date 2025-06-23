@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.Custom.domain.Cart;
@@ -179,13 +180,27 @@ public class OrderController {
         session.removeAttribute("cart");
         session.setAttribute("sum", 0);
 
-        return "redirect:/thanks";
+        return "redirect:/order/qr?orderId=" + order.getId();
     }
     
-    @GetMapping("/thanks")
-    public String thanks(){
-        return "home/thanks";
+@GetMapping("/order/qr")
+public String showOrderQrPayment(@RequestParam("orderId") Long orderId, Model model) {
+    Order order = orderRepository.findById(orderId).orElse(null);
+    if (order == null) {
+        return "redirect:/cart";
     }
+    String transferContent = "ORDER-" + order.getId();
+    long amount = (long) order.getTotalPrice(); // hoặc ép kiểu phù hợp
+
+    String qrUrl = "/images/myQR.jpg";
+    model.addAttribute("qrUrl", qrUrl);
+    model.addAttribute("amount", amount);
+    model.addAttribute("transferContent", transferContent);
+    model.addAttribute("orderId", order.getId());
+    return "home/qrPayment";
+}
+
+
     @GetMapping("/api/order/{id}")
     @ResponseBody
     public OrderDetailDTO getOrderDetail(@PathVariable Long id) {
