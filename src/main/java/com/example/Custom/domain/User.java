@@ -39,6 +39,12 @@ public class User {
     @OneToOne(mappedBy = "user")
     private Cart cart;
 
+
+    // login facebook, google
+    private String provider;
+    private String providerId;
+
+
     @Override
     public String toString() {
         return "User [id=" + id + ", email=" + email + ", password=" + password + ", fullName=" + fullName + ", phone="

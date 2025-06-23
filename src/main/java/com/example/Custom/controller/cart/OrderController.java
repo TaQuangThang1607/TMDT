@@ -1,5 +1,7 @@
 package com.example.Custom.controller.cart;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,8 @@ import com.example.Custom.domain.Cart;
 import com.example.Custom.domain.CartItem;
 import com.example.Custom.domain.Order;
 import com.example.Custom.domain.User;
+import com.example.Custom.domain.dto.CartDTO;
+import com.example.Custom.domain.dto.CartItemDTO;
 import com.example.Custom.domain.dto.CheckoutCartDTO;
 import com.example.Custom.domain.dto.OrderDTO;
 import com.example.Custom.domain.dto.OrderDetailDTO;
@@ -72,30 +76,39 @@ public class OrderController {
         return "home/checkout";
     }
     @PostMapping("/confirm-checkout")
-    public String getCheckoutPage(@ModelAttribute("cart") Cart cart, HttpServletRequest request) {
+    public String getCheckoutPage(@ModelAttribute("cartDTO") CartDTO cartDTO, HttpServletRequest request) {
         HttpSession session = request.getSession();
+        if (session.getAttribute("id") == null) {
+            return "redirect:/login";
+        }
+
+        Long id = (Long) session.getAttribute("id");
         User user = new User();
-        long id = (long) session.getAttribute("id");
         user.setId(id);
 
-        Cart updatedCart = cartService.fetchByUser(user);
-        List<CartItem> cartItems = updatedCart == null ? new ArrayList<>() : updatedCart.getCartItems();
+        // Lấy giỏ hàng thực tế từ database để đảm bảo dữ liệu chính xác
+        Cart cart = cartService.fetchByUser(user);
+        if (cart == null || cart.getCartItems().isEmpty()) {
+            return "redirect:/cart?error=" + URLEncoder.encode("Giỏ hàng trống", StandardCharsets.UTF_8);
+        }
 
-        cartService.handleUpdateCartBeforeCheckout(cartItems);
+        // Cập nhật số lượng từ cartDTO
+        cartService.handleUpdateCartBeforeCheckout(cartDTO.getCartItems());
 
+        // Tạo CheckoutCartDTO
         CheckoutCartDTO checkoutCartDTO = new CheckoutCartDTO();
-        checkoutCartDTO.setCartId(updatedCart.getId());
-        for (CartItem cartItem : cartItems) {
-            CheckoutCartDTO.CheckoutCartItemDTO itemDTO = new CheckoutCartDTO.CheckoutCartItemDTO();
-            itemDTO.setId(cartItem.getId());
-            itemDTO.setProductId(cartItem.getProduct().getId());
-            itemDTO.setProductName(cartItem.getProduct().getName());
-            itemDTO.setPrice(cartItem.getProduct().getPrice());
-            itemDTO.setColor(cartItem.getProduct().getColor());
-            itemDTO.setSize(cartItem.getProduct().getSize());
-            itemDTO.setImageUrl(cartItem.getProduct().getImageUrl());
-            itemDTO.setQuantity(cartItem.getQuantity());
-            checkoutCartDTO.getCartItems().add(itemDTO);
+        checkoutCartDTO.setCartId(cart.getId());
+        for (CartItemDTO itemDTO : cartDTO.getCartItems()) {
+            CheckoutCartDTO.CheckoutCartItemDTO checkoutItem = new CheckoutCartDTO.CheckoutCartItemDTO();
+            checkoutItem.setId(itemDTO.getId());
+            checkoutItem.setProductId(itemDTO.getProductId());
+            checkoutItem.setProductName(itemDTO.getProductName());
+            checkoutItem.setPrice(itemDTO.getPrice());
+            checkoutItem.setColor(itemDTO.getColor());
+            checkoutItem.setSize(itemDTO.getSize());
+            checkoutItem.setImageUrl(itemDTO.getImageUrl());
+            checkoutItem.setQuantity(itemDTO.getQuantity());
+            checkoutCartDTO.getCartItems().add(checkoutItem);
         }
 
         session.setAttribute("checkoutCart", checkoutCartDTO);
